@@ -88,39 +88,42 @@ const Appointment = () => {
 
 const bookAppointment = async () => {
   try {
-     console.log("=== BOOK APPOINTMENT ===");
-        console.log("Request Body:", req.body);
-        console.log("slotDate from request:", req.body.slotDate);
-        console.log("Type of slotDate:", typeof req.body.slotDate);
-        
-        // Check if slotDate is actually "undefined" string
-        if (req.body.slotDate === "undefined") {
-            console.error("❌ ERROR: slotDate is string 'undefined'!");
-            return res.json({ 
-                success: false, 
-                message: 'Invalid date format' 
-            });
-        }
-    const date = docSolts[slotIndex][0].datetime
-    let day = date.getDate()
-    let month = date.getMonth() + 1
-    let year = date.getFullYear()
+    console.log("=== BOOK APPOINTMENT ===");
+    
+    // Get the selected slot date
+    const selectedDate = docSolts[slotIndex][0].datetime
+    let day = selectedDate.getDate()
+    let month = selectedDate.getMonth() + 1
+    let year = selectedDate.getFullYear()
 
-    // ⚠️ CURRENT: This might be creating "undefined"
     const slotDate = day + '_' + month + '_' + year
     
-    // ✅ FIX: Add validation
-    if (!day || !month || !year) {
-      console.error('Date calculation error:', { day, month, year })
-      toast.error('Error calculating date')
+    // Debug logging
+    console.log("Selected date components:", { day, month, year })
+    console.log("slotDate to send:", slotDate)
+    console.log("slotTime:", slotTime)
+    console.log("docId:", docId)
+    
+    // Validate we have all required data
+    if (!slotDate || slotDate.includes('undefined') || slotDate.includes('NaN')) {
+      console.error('❌ ERROR: Invalid date calculation')
+      toast.error('Please select a valid date')
       return
     }
     
-    console.log('Date components:', { day, month, year })
-    console.log('slotDate to send:', slotDate)
+    if (!slotTime) {
+      toast.error('Please select a time slot')
+      return
+    }
     
-   
-    const { data } = await axios.post(backendUrl+'/api/user/book-appointment', 
+    if (!docId) {
+      toast.error('Doctor information not found')
+      return
+    }
+    
+    // Send booking request
+    const { data } = await axios.post(
+      backendUrl + '/api/user/book-appointment', 
       {
         docId,        
         slotDate, 
@@ -128,10 +131,14 @@ const bookAppointment = async () => {
         slotId: `slot_${docId}_${slotDate}_${slotTime.replace(':', '')}`
       }, 
       {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       }
     )    
-    console.log('DEBUG - Backend response:', data) // Add this too
+    
+    console.log('Backend response:', data)
     
     if(data.success){
       toast.success(data.message)
@@ -141,8 +148,9 @@ const bookAppointment = async () => {
       toast.error(data.message)
     }
   } catch (error) {
-    console.log(error)
-    toast.error(error.message)
+    console.log('Booking error:', error)
+    console.log('Error response:', error.response?.data)
+    toast.error(error.response?.data?.message || error.message || "Failed to book appointment")
   }
 }
   useEffect(()=>{
