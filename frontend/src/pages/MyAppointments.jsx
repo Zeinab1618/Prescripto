@@ -84,18 +84,33 @@ const MyAppointments = () => {
     });
   }
 
-  // Get status text and color
+  // Get overall appointment status
   const getAppointmentStatus = (appointment) => {
     if (appointment.cancelled) {
-      return { text: 'Cancelled', color: 'bg-red-100 text-red-800' };
+      return { 
+        text: 'Cancelled', 
+        color: 'bg-red-100 text-red-800'
+      };
     }
-    if (appointment.payment) {
-      return { text: 'Paid & Confirmed', color: 'bg-green-100 text-green-800' };
-    }
+    
     if (appointment.isCompleted) {
-      return { text: 'Completed', color: 'bg-purple-100 text-purple-800' };
+      return { 
+        text: 'Completed', 
+        color: 'bg-green-100 text-green-800'
+      };
     }
-    return { text: 'Pending Payment', color: 'bg-yellow-100 text-yellow-800' };
+    
+    if (appointment.payment) {
+      return { 
+        text: 'In Progress', 
+        color: 'bg-blue-100 text-blue-800'
+      };
+    }
+    
+    return { 
+      text: 'Pending Payment', 
+      color: 'bg-yellow-100 text-yellow-800'
+    };
   };
 
   if (loading) {
@@ -158,10 +173,35 @@ const MyAppointments = () => {
                   </div>
                 </div>
                 
-                {/* Action Buttons - Clean and Simple */}
+                {/* Status Details Section - Only show when payment is made */}
+                {appointment.payment && (
+                  <div className="mb-4">
+                    <div className="flex flex-wrap gap-4">
+                      {/* Payment Status - Always show when payment is made */}
+                      <div className="bg-green-50 text-green-700 px-3 py-1.5 rounded-lg">
+                        <span className="text-sm font-medium">Payment: Paid & Confirmed</span>
+                      </div>
+                      
+                      {/* Appointment Status - Only show when payment is made */}
+                      {!appointment.cancelled && (
+                        <div className={`px-3 py-1.5 rounded-lg ${
+                          appointment.isCompleted
+                            ? 'bg-green-50 text-green-700'
+                            : 'bg-blue-50 text-blue-700'
+                        }`}>
+                          <span className="text-sm font-medium">
+                            Status: {appointment.isCompleted ? 'Completed' : 'In Progress'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Action Buttons */}
                 <div className="flex flex-wrap gap-3">
-                  {/* Cancel Appointment Button - Only show if NOT paid and NOT cancelled */}
-                  {!appointment.cancelled && !appointment.payment && (
+                  {/* Cancel Appointment Button - Only show if NOT paid and NOT cancelled and NOT completed */}
+                  {!appointment.cancelled && !appointment.payment && !appointment.isCompleted && (
                     <button 
                       onClick={() => cancelAppointment(appointment._id)} 
                       className="px-4 py-2 border border-red-500 text-red-500 rounded-lg hover:bg-red-50 transition-colors"
@@ -170,23 +210,22 @@ const MyAppointments = () => {
                     </button>
                   )}
                   
-                  {/* Paid Confirmation Message */}
-                  {appointment.payment && !appointment.cancelled && (
-                    <div className="flex items-center text-green-700 bg-green-50 px-4 py-2 rounded-lg">
-                      <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-sm font-medium">Payment confirmed by admin</span>
+                  {/* Status Messages */}
+                  {appointment.payment && !appointment.cancelled && !appointment.isCompleted && (
+                    <div className="text-blue-700 text-sm bg-blue-50 px-4 py-2 rounded-lg">
+                      Payment confirmed. Waiting for doctor to complete the appointment.
                     </div>
                   )}
                   
-                  {/* Cancelled Message */}
+                  {appointment.isCompleted && (
+                    <div className="text-green-700 text-sm bg-green-50 px-4 py-2 rounded-lg">
+                      Appointment completed successfully!
+                    </div>
+                  )}
+                  
                   {appointment.cancelled && (
-                    <div className="flex items-center text-red-700 bg-red-50 px-4 py-2 rounded-lg">
-                      <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-sm font-medium">This appointment has been cancelled</span>
+                    <div className="text-red-700 text-sm bg-red-50 px-4 py-2 rounded-lg">
+                      This appointment has been cancelled.
                     </div>
                   )}
                 </div>

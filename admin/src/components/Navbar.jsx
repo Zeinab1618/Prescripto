@@ -1,19 +1,21 @@
 import React, { useContext } from "react";
 import { AdminContext } from "../context/AdminContext";
+import { DoctorContext } from "../context/DoctorContext";
 import { assets } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
 
-
 const Navbar = () => {
   const { aToken, setAToken } = useContext(AdminContext);
-  const navigate=useNavigate()
+  const { dToken, setDToken } = useContext(DoctorContext);
+  const navigate = useNavigate();
 
-  const logout=() =>{
+  const logout = () => {
     navigate('/')
     aToken && setAToken('')
     aToken && localStorage.removeItem('aToken')
-
-  }
+    dToken && setDToken('')
+    dToken && localStorage.removeItem('dToken')
+  };
 
   return (
     <div className="flex justify-between items-center px-4 sm:px-10 py-3 border-b bg-white">
@@ -23,9 +25,16 @@ const Navbar = () => {
           src={assets.admin_logo}
           alt="Admin Logo"
         />
-        <p className='border px-2.5 py-0.5 rounded-full border-gray-500 text-gray-600'>{aToken ? "Admin" : "Doctor"}</p>
+        <p className='border px-2.5 py-0.5 rounded-full border-gray-500 text-gray-600'>
+          {aToken ? "Admin" : dToken ? "Doctor" : ""}
+        </p>
       </div>
-      <button onClick={logout} className='bg-primary text-white text-sm px-10 py-2 rounded-full'>Logout</button>
+      <button 
+        onClick={logout} 
+        className='bg-primary text-white text-sm px-10 py-2 rounded-full hover:bg-blue-700 transition-colors'
+      >
+        Logout
+      </button>
     </div>
   );
 };

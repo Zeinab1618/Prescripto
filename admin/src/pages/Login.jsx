@@ -4,13 +4,15 @@ import axios from "axios";
 import { useContext } from "react";
 import { AdminContext } from "../context/AdminContext"; // adjust path
 import { toast } from "react-toastify";
+import { DoctorContext } from "../context/DoctorContext";
 
 const Login = () => {
   const [state, setState] = useState("Admin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const { setAToken, backendUrl } = useContext(AdminContext);
+  const {setDToken} = useContext(DoctorContext)
+
   const onSubmitHandler = async (event) => {
     event.preventDefault();
     try {
@@ -26,6 +28,16 @@ const Login = () => {
           toast.error(data.message|| "wrong credentials");
         }
       } else {
+
+        const {data} = await axios.post(backendUrl + '/api/doctor/login', {email,password})
+        if (data.success) {
+          localStorage.setItem("DToken", data.token);
+          setDToken(data.token);
+          console.log(data.token)
+        } else {
+          toast.error(data.message|| "wrong credentials");
+        }
+
       }
     } catch (error) {}
   };
@@ -74,7 +86,7 @@ const Login = () => {
         ) : (
           <p>
             Admin Login?{" "}
-            <span onClick={() => setState("Admin")}>Click here </span>
+            <span className="text-primary underline cursor-pointer" onClick={() => setState("Admin")}>Click here </span>
           </p>
         )}
       </div>
