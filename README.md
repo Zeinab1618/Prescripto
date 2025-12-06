@@ -1,5 +1,3 @@
-Markdown
-
 ## 🚀 Getting Started
 
 ### Installation
